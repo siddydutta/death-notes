@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+from decouple import config
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -27,6 +28,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+BASE_URL = config('BASE_URL', default='http://localhost:8000')
+
 
 # Application definition
 
@@ -37,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'auth_app',
 ]
 
 MIDDLEWARE = [
@@ -121,3 +125,11 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Microsoft Identity Platform Configuration
+
+MSAL_CLIENT_ID = config('MSAL_CLIENT_ID')
+MSAL_CLIENT_SECRET = config('MSAL_CLIENT_SECRET')
+MSAL_AUTHORITY = config(
+    'MSAL_AUTHORITY', default='https://login.microsoftonline.com/common'
+)
