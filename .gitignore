@@ -13,3 +13,6 @@ __pycache__/
 
 # IDE Files
 .vscode/
+
+# Log Files
+logs/
