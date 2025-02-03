@@ -1,6 +1,6 @@
 from django.urls import path
 
-from auth_app.views import MSLoginCallbackView, MSLoginView
+from accounts.views import MSLoginCallbackView, MSLoginView
 
 
 urlpatterns = [

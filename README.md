@@ -28,8 +28,13 @@ pip install -r requirements.txt
 pre-commit install
 ```
 
+5. Create Superuser for Admin
+```
+python manage.py createsuperuser
+```
+
 
 # Team Members
-1. Arshia Kaul (2976917k@student.gla.ac.uk)
+1. Arshia Kaul (2976917K@student.gla.ac.uk)
 2. Harish Ravichandran (2973284R@student.gla.ac.uk)
-3. Siddhartha Pratim Dutta (2897074d@student.gla.ac.uk)
+3. Siddhartha Pratim Dutta (2897074D@student.gla.ac.uk)

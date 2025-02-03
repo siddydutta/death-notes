@@ -4,7 +4,7 @@ from django.http import HttpResponseBadRequest, JsonResponse
 from django.shortcuts import redirect
 from django.views import View
 
-from auth_app.clients.microsoft import REDIRECT_URI, SCOPES, get_user_info, msal_app
+from accounts.clients.microsoft import REDIRECT_URI, SCOPES, get_user_info, msal_app
 
 
 logger = logging.getLogger(__name__)
