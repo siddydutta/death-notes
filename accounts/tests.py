@@ -3,14 +3,14 @@ from unittest.mock import patch
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from auth_app.clients.microsoft import REDIRECT_URI, SCOPES
+from accounts.clients.microsoft import REDIRECT_URI, SCOPES
 
 
 class MSLoginViewTest(TestCase):
     def setUp(self):
         self.client = Client()
 
-    @patch('auth_app.clients.microsoft.msal_app.get_authorization_request_url')
+    @patch('accounts.clients.microsoft.msal_app.get_authorization_request_url')
     def test_login_redirects_to_msal(self, mock_get_auth_url):
         mock_get_auth_url.return_value = 'https://login.microsoftonline.com/auth'
 
@@ -27,8 +27,8 @@ class MSLoginCallbackViewTest(TestCase):
     def setUp(self):
         self.client = Client()
 
-    @patch('auth_app.clients.microsoft.msal_app.acquire_token_by_authorization_code')
-    @patch('auth_app.views.get_user_info')
+    @patch('accounts.clients.microsoft.msal_app.acquire_token_by_authorization_code')
+    @patch('accounts.views.get_user_info')
     def test_callback_valid_code(self, mock_get_user_info, mock_acquire_token):
         mock_acquire_token.return_value = {'access_token': 'mock_token'}
         mock_get_user_info.return_value = {'email': 'test@example.com'}
@@ -47,7 +47,7 @@ class MSLoginCallbackViewTest(TestCase):
 
         self.assertEqual(response.status_code, 400)
 
-    @patch('auth_app.clients.microsoft.msal_app.acquire_token_by_authorization_code')
+    @patch('accounts.clients.microsoft.msal_app.acquire_token_by_authorization_code')
     def test_callback_invalid_token(self, mock_acquire_token):
         mock_acquire_token.return_value = {}
 
