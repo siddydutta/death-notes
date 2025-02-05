@@ -34,6 +34,19 @@ class Message(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        if self.type == self.Type.FINAL_WORD:
+            if not self.delay:
+                raise ValueError('Delay must be set for FINAL_WORD messages')
+            if self.scheduled_at:
+                raise ValueError('Scheduled at must not be set for FINAL_WORD messages')
+        if self.type == self.Type.TIME_CAPSULE:
+            if self.delay:
+                raise ValueError('Delay must not be set for TIME_CAPSULE messages')
+            if not self.scheduled_at:
+                raise ValueError('Scheduled at must be set for TIME_CAPSULE messages')
+        return super().save(args, **kwargs)
+
     def __str__(self):
         return f'Message {self.id} - {self.type} - {self.subject}'
 
