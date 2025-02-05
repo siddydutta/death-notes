@@ -15,7 +15,9 @@ class Message(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages')
     type = models.CharField(max_length=20, choices=Type.choices)
     recipients = models.TextField(help_text='Comma-separated list of email recipients')
-    status = models.CharField(max_length=20, choices=Status.choices)
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.SCHEDULED
+    )
     subject = models.CharField(max_length=255)
     text = models.TextField()
     delay = models.IntegerField(
@@ -32,6 +34,19 @@ class Message(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        if self.type == self.Type.FINAL_WORD:
+            if not self.delay:
+                raise ValueError('Delay must be set for FINAL_WORD messages')
+            if self.scheduled_at:
+                raise ValueError('Scheduled at must not be set for FINAL_WORD messages')
+        if self.type == self.Type.TIME_CAPSULE:
+            if self.delay:
+                raise ValueError('Delay must not be set for TIME_CAPSULE messages')
+            if not self.scheduled_at:
+                raise ValueError('Scheduled at must be set for TIME_CAPSULE messages')
+        return super().save(args, **kwargs)
+
     def __str__(self):
         return f'Message {self.id} - {self.type} - {self.subject}'
 
@@ -41,6 +56,7 @@ class ActivityLog(models.Model):
         CHECKED_IN = 'CHECKED_IN', 'Checked In'
         MESSAGE_CREATED = 'MESSAGE_CREATED', 'Message Created'
         MESSAGE_DELIVERED = 'MESSAGE_DELIVERED', 'Message Delivered'
+        MESSAGE_DELETED = 'MESSAGE_DELETED', 'Message Deleted'
 
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='activity_logs'

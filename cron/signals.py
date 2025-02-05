@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from django.contrib.auth.signals import user_logged_in
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 
@@ -85,4 +85,13 @@ def post_save_job(sender, created, instance: Job, **kwargs):
         user_id=instance.message.user_id,
         type=ActivityLog.Type.MESSAGE_DELIVERED,
         description=f'{MESSAGE_TYPE_MAPPING[instance.message.type]} - "{instance.message.subject}" delivered.',
+    )
+
+
+@receiver(post_delete, sender=Job)
+def post_delete_job(sender, instance: Job, **kwargs):
+    ActivityLog.objects.create(
+        user_id=instance.message.user_id,
+        type=ActivityLog.Type.MESSAGE_DELETED,
+        description=f'{MESSAGE_TYPE_MAPPING[instance.message.type]} - "{instance.message.subject}" deleted.',
     )
