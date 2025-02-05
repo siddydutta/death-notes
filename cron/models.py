@@ -11,3 +11,9 @@ class Job(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ('scheduled_at',)
+        indexes = [
+            models.Index(fields=['scheduled_at']),
+        ]

@@ -15,7 +15,9 @@ class Message(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages')
     type = models.CharField(max_length=20, choices=Type.choices)
     recipients = models.TextField(help_text='Comma-separated list of email recipients')
-    status = models.CharField(max_length=20, choices=Status.choices)
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.SCHEDULED
+    )
     subject = models.CharField(max_length=255)
     text = models.TextField()
     delay = models.IntegerField(
@@ -41,6 +43,7 @@ class ActivityLog(models.Model):
         CHECKED_IN = 'CHECKED_IN', 'Checked In'
         MESSAGE_CREATED = 'MESSAGE_CREATED', 'Message Created'
         MESSAGE_DELIVERED = 'MESSAGE_DELIVERED', 'Message Delivered'
+        MESSAGE_DELETED = 'MESSAGE_DELETED', 'Message Deleted'
 
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='activity_logs'
