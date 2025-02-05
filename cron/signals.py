@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from django.contrib.auth.signals import user_logged_in
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 
@@ -28,6 +28,34 @@ def add_login_activitylog(sender, request, user: User, **kwargs):
         job.scheduled_at = now + timedelta(days=job.message.delay)
 
     Job.objects.bulk_update(jobs, ['scheduled_at'])
+
+
+@receiver(post_save, sender=Message)
+def post_save_message(sender, created, instance: Message, **kwargs):
+    if created:
+        scheduled_at = (
+            instance.scheduled_at
+            if instance.type == Message.Type.TIME_CAPSULE
+            else timezone.now() + timedelta(days=instance.delay)
+        )
+        Job.objects.create(
+            message=instance,
+            scheduled_at=scheduled_at,
+        )
+    else:
+        if instance.type == Message.Type.TIME_CAPSULE:
+            if instance.scheduled_at != getattr(
+                instance, '__previous_scheduled_at', None
+            ):
+                Job.objects.filter(message_id=instance.id).update(
+                    scheduled_at=instance.scheduled_at
+                )
+        elif instance.type == Message.Type.FINAL_WORD:
+            if instance.delay != getattr(instance, '__previous_delay', None):
+                scheduled_at = timezone.now() + timedelta(days=instance.delay)
+                Job.objects.filter(message_id=instance.id).update(
+                    scheduled_at=scheduled_at
+                )
 
 
 @receiver(pre_save, sender=Job)
