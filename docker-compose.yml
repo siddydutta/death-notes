@@ -1,7 +1,17 @@
 services:
   web:
     build: .
+    container_name: django_web
     ports:
       - "8000:8000"
+    volumes:
+      - .:/app
+
+  qcluster:
+    build: .
+    container_name: django_qcluster
+    depends_on:
+      - web
+    command: ["python", "manage.py", "qcluster"]
     volumes:
       - .:/app
