@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_q',
     'accounts',
     'web',
     'cron',
@@ -175,6 +176,14 @@ LOGGING = {
             'backupCount': 5,
             'formatter': 'verbose',
         },
+        'task_file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': LOG_DIR / 'tasks.log',
+            'maxBytes': 5 * 1024 * 1024,
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
     },
     'loggers': {
         'django': {
@@ -186,6 +195,11 @@ LOGGING = {
             'handlers': ['console'] if DEBUG else ['error_file'],
             'level': 'WARNING',
             'propagate': False,
+        },
+        'django_q': {
+            'handlers': ['console'] if DEBUG else ['task_file'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': True,
         },
     },
 }
@@ -212,3 +226,15 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 EMAIL_TIMEOUT = 5
+
+
+# Django Q2 Configuration
+
+Q_CLUSTER = {
+    'name': 'DjangORM',
+    'workers': 1,
+    'timeout': 60,
+    'retry': 90,
+    'queue_limit': 10,
+    'orm': 'default',
+}
