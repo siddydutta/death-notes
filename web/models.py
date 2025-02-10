@@ -20,7 +20,7 @@ class Message(models.Model):
     )
     subject = models.CharField(max_length=255)
     text = models.TextField()
-    delay = models.IntegerField(
+    delay = models.PositiveSmallIntegerField(
         null=True,
         blank=True,
         help_text='Delay before sending message for FINAL_WORD (in days)',
