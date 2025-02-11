@@ -25,7 +25,7 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     first_name = models.CharField(null=True, blank=True, max_length=30)
     last_name = models.CharField(null=True, blank=True, max_length=30)
-    interval = models.IntegerField(
+    interval = models.PositiveSmallIntegerField(
         default=0,
         blank=True,
         help_text='Interval after which user is considered inactive (in days)',
