@@ -13,6 +13,11 @@ __pycache__/
 
 # IDE Files
 .vscode/
+.idea/
 
 # Log Files
 logs/
+
+# Code Coverage Files
+.coverage
+htmlcov/
