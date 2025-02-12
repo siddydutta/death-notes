@@ -45,7 +45,7 @@ class Message(models.Model):
                 raise ValueError('Delay must not be set for TIME_CAPSULE messages')
             if not self.scheduled_at:
                 raise ValueError('Scheduled at must be set for TIME_CAPSULE messages')
-        return super().save(args, **kwargs)
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return f'Message {self.id} - {self.type} - {self.subject}'
