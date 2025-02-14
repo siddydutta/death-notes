@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{{ subject }}</title>
+        <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+
+        .button:hover {
+            background: #0056b3;
+        }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <p>{{ text|linebreaks }}</p>
+            <div class="footer">
+                <p>
+                    Sent on behalf of <strong>{{ user.first_name|default:'' }} {{ user.last_name|default:'' }}</strong>
+                </p>
+                <p>
+                    {% if type == "FINAL_WORD" %}
+                        {{ user.email }} arranged for this message to be sent to you if they did not check in to our service after a while.
+                    {% elif type == "TIME_CAPSULE" %}
+                        {{ user.email }} scheduled this message to be sent to you at this time.
+                    {% endif %}
+                </p>
+                <p>
+                    <a href="{{ base_url }}">Visit Our Website</a>
+                </p>
+            </div>
+        </div>
+    </body>
+</html>

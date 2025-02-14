@@ -33,6 +33,29 @@ pre-commit install
 python manage.py createsuperuser
 ```
 
+6. Start Server and Cluster
+```
+python manage.py runserver
+```
+and
+```
+python manage.py qcluster
+```
+
+7. Tests and Coverage Reports
+Run Test
+```
+coverage run manage.py test
+```
+Generate Report
+```
+coverage report -m
+```
+OR for a detailed HTML report:
+```
+coverage html
+```
+
 
 # Team Members
 1. Arshia Kaul (2976917K@student.gla.ac.uk)
