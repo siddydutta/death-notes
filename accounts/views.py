@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 class MicrosoftAuthURLAPIView(APIView):
+    permission_classes = []
+
     def get(self, request, *args, **kwargs):
         auth_url = msal_app.get_authorization_request_url(
             scopes=SCOPES,
@@ -23,6 +25,8 @@ class MicrosoftAuthURLAPIView(APIView):
 
 
 class MicrosoftLoginCallbackAPIView(APIView):
+    permission_classes = []
+
     def get(self, request, *args, **kwargs):
         code = request.GET.get('code')
         return Response({'code': code}, status=status.HTTP_200_OK)
