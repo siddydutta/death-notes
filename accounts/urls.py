@@ -1,9 +1,15 @@
 from django.urls import path
+from rest_framework_simplejwt.views import TokenRefreshView
 
-from accounts.views import MSLoginCallbackView, MSLoginView
+from accounts.views import MicrosoftAuthURLAPIView, MicrosoftLoginCallbackAPIView
 
 
 urlpatterns = [
-    path('microsoft/login/', MSLoginView.as_view(), name='ms-login'),
-    path('microsoft/callback/', MSLoginCallbackView.as_view(), name='ms-callback'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='refresh-token'),
+    path('microsoft/url/', MicrosoftAuthURLAPIView.as_view(), name='ms-auth-url'),
+    path(
+        'microsoft/callback/',
+        MicrosoftLoginCallbackAPIView.as_view(),
+        name='ms-callback',
+    ),
 ]

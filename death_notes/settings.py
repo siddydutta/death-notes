@@ -10,8 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
-from decouple import config
 from pathlib import Path
+from datetime import timedelta
+
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'django_q',
     'accounts',
     'web',
@@ -85,6 +88,14 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
+}
+
+# JWT Configuration
+# https://django-rest-framework-simplejwt.readthedocs.io/en/stable/settings.html
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
 }
 
 
@@ -211,6 +222,7 @@ MSAL_CLIENT_SECRET = config('MSAL_CLIENT_SECRET')
 MSAL_AUTHORITY = config(
     'MSAL_AUTHORITY', default='https://login.microsoftonline.com/common'
 )
+MSAL_REDIRECT_URI = config('MSAL_REDIRECT_URI')
 
 
 # Email Configuration
