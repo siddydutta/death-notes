@@ -39,6 +39,7 @@ class MessageSerializer(serializers.ModelSerializer):
             'updated_at',
         )
         read_only_fields = (
+            'id',
             'status',
             'created_at',
             'updated_at',
@@ -46,6 +47,7 @@ class MessageSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         validated_data.pop('type', None)
+        validated_data.pop('user', None)
         return super().update(instance, validated_data)
 
 
