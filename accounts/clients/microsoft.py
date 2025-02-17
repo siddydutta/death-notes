@@ -4,7 +4,7 @@ from django.conf import settings
 from msal import ConfidentialClientApplication
 
 
-REDIRECT_URI = f'{settings.BASE_URL}/api/auth/microsoft/callback/'
+REDIRECT_URI = settings.MSAL_REDIRECT_URI
 
 USER_INFO_URL = 'https://graph.microsoft.com/v1.0/me'
 
