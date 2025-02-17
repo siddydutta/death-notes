@@ -6,7 +6,7 @@ charset-normalizer==3.4.1
 coverage==7.6.12
 cryptography==44.0.1
 distlib==0.3.9
-Django==5.1.5
+Django==5.1.6
 django-picklefield==3.2
 django-q2==1.7.6
 filelock==3.17.0
