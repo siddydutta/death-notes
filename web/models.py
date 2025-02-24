@@ -63,7 +63,7 @@ class Message(models.Model):
                 'text': self.text,
                 'type': self.type,
                 'user': self.user,
-                'base_url': settings.BASE_URL,
+                'base_url': settings.FRONTEND_URL,
             },
         )
         plain_message = strip_tags(html_message)

@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 
-from decouple import config
+from decouple import config, Csv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,14 +23,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ompu^_3k0-#v+s7nosp8r=-p1a##ihrn1me4q1jr8=z!geax5r'
+SECRET_KEY = config('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DJANGO_DEBUG', cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', cast=Csv())
 
-BASE_URL = config('BASE_URL', default='http://localhost:8000')
+CSRF_TRUSTED_ORIGINS = config('DJANGO_CSRF_TRUSTED_ORIGINS', cast=Csv())
+
+FRONTEND_URL = config('FRONTEND_URL')
 
 
 # Application definition
@@ -236,9 +238,7 @@ LOGGING = {
 
 MSAL_CLIENT_ID = config('MSAL_CLIENT_ID')
 MSAL_CLIENT_SECRET = config('MSAL_CLIENT_SECRET')
-MSAL_AUTHORITY = config(
-    'MSAL_AUTHORITY', default='https://login.microsoftonline.com/common'
-)
+MSAL_AUTHORITY = config('MSAL_AUTHORITY')
 MSAL_REDIRECT_URI = config('MSAL_REDIRECT_URI')
 
 
