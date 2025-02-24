@@ -206,7 +206,7 @@ LOGGING = {
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': LOG_DIR / 'access.log',
             'maxBytes': 5 * 1024 * 1024,
-            'backupCount': 5,
+            'backupCount': 2,
             'formatter': 'verbose',
         },
         'error_file': {
@@ -214,7 +214,7 @@ LOGGING = {
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': LOG_DIR / 'error.log',
             'maxBytes': 5 * 1024 * 1024,
-            'backupCount': 5,
+            'backupCount': 2,
             'formatter': 'verbose',
         },
         'task_file': {
@@ -222,7 +222,7 @@ LOGGING = {
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': LOG_DIR / 'tasks.log',
             'maxBytes': 5 * 1024 * 1024,
-            'backupCount': 5,
+            'backupCount': 2,
             'formatter': 'verbose',
         },
     },
