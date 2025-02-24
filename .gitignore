@@ -21,3 +21,6 @@ logs/
 # Code Coverage Files
 .coverage
 htmlcov/
+
+# Static Files
+staticfiles/
