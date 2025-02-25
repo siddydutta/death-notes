@@ -13,7 +13,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from web.models import ActivityLog, Message
 from web.serializers import MessageSerializer
-from web.signals import add_login_activitylog
 
 
 User = get_user_model()
@@ -23,24 +22,6 @@ class SignalTests(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.user = User.objects.create_user(email='user@test.com', password='foobar')
-
-    def test_add_login_activitylog(self):
-        request = self.factory.get('/some/path/')
-        add_login_activitylog(sender=None, request=request, user=self.user)
-        self.assertTrue(
-            ActivityLog.objects.filter(
-                user=self.user, type=ActivityLog.Type.CHECKED_IN
-            ).exists()
-        )
-
-    def test_add_login_activitylog_admin_path(self):
-        request = self.factory.get('/admin/some/path/')
-        add_login_activitylog(sender=None, request=request, user=self.user)
-        self.assertFalse(
-            ActivityLog.objects.filter(
-                user=self.user, type=ActivityLog.Type.CHECKED_IN
-            ).exists()
-        )
 
     def test_pre_save_message(self):
         message = Message.objects.create(
@@ -202,6 +183,9 @@ class ViewTests(APITestCase):
         response = self.client.post(reverse('checkin'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.user.refresh_from_db()
+        activity_log = ActivityLog.objects.first()
+        self.assertEqual(activity_log.user, self.user)
+        self.assertEqual(activity_log.type, ActivityLog.Type.CHECKED_IN)
         self.assertIsNotNone(self.user.last_checkin)
 
     def test_user_api_view_get(self):

@@ -38,6 +38,11 @@ class CheckinAPIView(APIView):
     def post(self, request, *args, **kwargs):
         request.user.last_checkin = timezone.now()
         request.user.save()
+        ActivityLog.objects.create(
+            user=request.user,
+            type=ActivityLog.Type.CHECKED_IN,
+            description='Checked in to Death Notes',
+        )
         return Response(status=status.HTTP_200_OK)
 
 

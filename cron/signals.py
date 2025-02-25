@@ -1,25 +1,26 @@
 from datetime import timedelta
 
-from django.contrib.auth.signals import user_logged_in
 from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 
-from accounts.models import User
 from cron.models import Job
 from web.constants import MESSAGE_TYPE_MAPPING
 from web.models import ActivityLog, Message
 
 
-@receiver(user_logged_in)
-def add_login_activitylog(sender, request, user: User, **kwargs):
+@receiver(post_save, sender=ActivityLog)
+def update_jobs_on_checkin(sender, created, instance: ActivityLog, **kwargs):
+    if not created or instance.type != ActivityLog.Type.CHECKED_IN:
+        return
+
     jobs = (
         Job.objects.only('scheduled_at', 'message__delay')
         .select_related('message')
         .filter(
             message__type=Message.Type.FINAL_WORD,
             message__delay__isnull=False,
-            message__user_id=user.id,
+            message__user_id=instance.user_id,
         )
     )
 
@@ -76,9 +77,10 @@ def post_save_job(sender, created, instance: Job, **kwargs):
         )
     if instance.is_completed is False:
         return
-    if not hasattr(instance, '__previous_is_completed'):
-        return
-    if instance.is_completed == instance.__previous_is_completed:
+    if (
+        not hasattr(instance, '__previous_is_completed')
+        or instance.is_completed == instance.__previous_is_completed
+    ):
         return
 
     ActivityLog.objects.create(
