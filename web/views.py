@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
@@ -16,6 +17,7 @@ class HomeAPIView(APIView):
         queryset = Message.objects.filter(user=request.user)
 
         response = {
+            'last_checkin': request.user.last_checkin,
             'total': {
                 'FINAL_WORD': queryset.filter(type=Message.Type.FINAL_WORD).count(),
                 'TIME_CAPSULE': queryset.filter(type=Message.Type.TIME_CAPSULE).count(),
@@ -30,6 +32,13 @@ class HomeAPIView(APIView):
             },
         }
         return Response(data=response, status=status.HTTP_200_OK)
+
+
+class CheckinAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        request.user.last_checkin = timezone.now()
+        request.user.save()
+        return Response(status=status.HTTP_200_OK)
 
 
 class UserAPIView(APIView):
