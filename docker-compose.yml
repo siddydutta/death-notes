@@ -6,6 +6,7 @@ services:
       - "8000:8000"
     volumes:
       - .:/app
+      - /opt/data/death-notes/db.sqlite3:/app/db.sqlite3
 
   qcluster:
     build: .
@@ -15,3 +16,4 @@ services:
     command: ["python", "manage.py", "qcluster"]
     volumes:
       - .:/app
+      - /opt/data/death-notes/db.sqlite3:/app/db.sqlite3
