@@ -1,0 +1,39 @@
+name: Deploy Application
+
+on:
+  push:
+    branches:  [ "master" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to Azure VM
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          set -e
+          cd /opt/data/death-notes/
+          echo "Stopping & Removing Application"
+          sudo docker-compose down
+          sudo cp db.sqlite3 ../db.sqlite3
+          cd ..
+          sudo rm -rf death-notes/
+          echo "Starting Application"
+          sudo git clone https://github.com/siddydutta/death-notes.git
+          cd death-notes
+          sudo cp ../.env .env
+          sudo mv ../db.sqlite3 db.sqlite3
+          sudo docker-compose build
+          sudo docker-compose up -d --remove-orphans
+          EOF
