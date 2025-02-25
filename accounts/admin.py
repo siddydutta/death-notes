@@ -24,6 +24,7 @@ class UserAdmin(UserAdmin):
                     'first_name',
                     'last_name',
                     'interval',
+                    'last_checkin',
                 )
             },
         ),
@@ -54,3 +55,4 @@ class UserAdmin(UserAdmin):
             },
         ),
     )
+    readonly_fields = ('last_checkin',)

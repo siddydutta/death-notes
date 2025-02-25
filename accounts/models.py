@@ -31,6 +31,10 @@ class User(AbstractUser):
         blank=True,
         help_text='Interval after which user is considered inactive (in days)',
     )
+    last_checkin = models.DateTimeField(
+        auto_now_add=True,
+        help_text='Last timestamp user checked in at',
+    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

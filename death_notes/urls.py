@@ -20,8 +20,11 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+from death_notes.views import root
+
 
 urlpatterns = [
+    path('', root, name='root'),
     path('admin/', admin.site.urls),
     path('api/auth/', include('accounts.urls')),
     path('api/web/', include('web.urls')),
