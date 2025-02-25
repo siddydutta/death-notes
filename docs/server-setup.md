@@ -40,7 +40,6 @@ sudo nano /etc/nginx/sites-available/death-notes
 <details open>
   <summary>Config</summary>
 
-    ```
     server {
         listen 80;
         server_name api.deathnotes.tech deathnotes.uksouth.cloudapp.azure.com;
@@ -52,7 +51,6 @@ sudo nano /etc/nginx/sites-available/death-notes
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         }
     }
-    ```
 </details>
 
 ```

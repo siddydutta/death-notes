@@ -1,6 +1,10 @@
 # Death Notes
 > COMPSCI5012 Internet Technology (M) 2024-25
 
+![Build Status](https://github.com/siddydutta/death-notes/actions/workflows/tests.yml/badge.svg)
+![Deployment Status](https://github.com/siddydutta/death-notes/actions/workflows/deploy.yml/badge.svg)
+
+
 # Project Requirements
 1. [Python 3.12](https://www.python.org/downloads/release/python-3120/)
 
