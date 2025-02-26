@@ -6,7 +6,7 @@ class CronConfig(AppConfig):
     name = 'cron'
 
     def ready(self):
-        # connect signals
+        # connect signals on app initialization
         import cron.signals  # noqa: F401
 
         return super().ready()

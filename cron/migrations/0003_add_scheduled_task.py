@@ -4,6 +4,7 @@ from django.db import migrations
 
 
 def create_scheduled_task(apps, schema_editor):
+    # create a default scheduled task to process pending jobs every 30 minutes
     Schedule = apps.get_model('django_q', 'Schedule')
     Schedule.objects.get_or_create(
         func='cron.tasks.process_pending_jobs',
@@ -14,6 +15,7 @@ def create_scheduled_task(apps, schema_editor):
 
 
 def delete_scheduled_task(apps, schema_editor):
+    # delete the scheduled task to process pending jobs
     Schedule = apps.get_model('django_q', 'Schedule')
     Schedule.objects.filter(func='cron.tasks.process_pending_jobs').delete()
 

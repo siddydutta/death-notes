@@ -104,6 +104,7 @@ STORAGES = {
 
 # REST Framework Configuration
 # https://www.django-rest-framework.org/api-guide/settings/
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',

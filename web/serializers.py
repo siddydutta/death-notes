@@ -21,6 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class MessageSerializer(serializers.ModelSerializer):
+    # user field is hidden and set to the current user
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -45,7 +46,8 @@ class MessageSerializer(serializers.ModelSerializer):
             'updated_at',
         )
 
-    def update(self, instance, validated_data):
+    def update(self, instance: Message, validated_data: dict) -> Message:
+        """Override the update method to prevent the update of type and user fields."""
         validated_data.pop('type', None)
         validated_data.pop('user', None)
         return super().update(instance, validated_data)

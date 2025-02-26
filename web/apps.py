@@ -6,7 +6,7 @@ class WebConfig(AppConfig):
     name = 'web'
 
     def ready(self):
-        # connect signals
+        # connect signals on app initialization
         import web.signals  # noqa: F401
 
         return super().ready()

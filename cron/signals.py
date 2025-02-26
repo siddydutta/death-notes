@@ -10,10 +10,18 @@ from web.models import ActivityLog, Message
 
 
 @receiver(post_save, sender=ActivityLog)
-def update_jobs_on_checkin(sender, created, instance: ActivityLog, **kwargs):
+def update_jobs_on_checkin(sender, created: bool, instance: ActivityLog, **kwargs):
+    """Signal handler to update the scheduled time of jobs when an ActivityLog instance is checked in.
+
+    Args:
+        sender (Type[Model]): The model class that sent the signal.
+        created (bool): A boolean indicating whether the instance was created.
+        instance (ActivityLog): The instance of ActivityLog that triggered the signal.
+    """
     if not created or instance.type != ActivityLog.Type.CHECKED_IN:
         return
 
+    # filter user's final word messages with delay
     jobs = (
         Job.objects.only('scheduled_at', 'message__delay')
         .select_related('message')
@@ -28,12 +36,21 @@ def update_jobs_on_checkin(sender, created, instance: ActivityLog, **kwargs):
     for job in jobs:
         job.scheduled_at = now + timedelta(days=job.message.delay)
 
+    # bulk update the scheduled time of jobs without triggering signals
     Job.objects.bulk_update(jobs, ['scheduled_at'])
 
 
 @receiver(post_save, sender=Message)
-def post_save_message(sender, created, instance: Message, **kwargs):
+def post_save_message(sender, created: bool, instance: Message, **kwargs):
+    """Signal handler to create a Job instance when a Message instance is created.
+
+    Args:
+        sender (Type[Model]): The model class that sent the signal.
+        created (bool): A boolean indicating whether the instance was created.
+        instance (Message): The instance of Message that triggered the signal.
+    """
     if created:
+        # create a job for the message
         scheduled_at = (
             instance.scheduled_at
             if instance.type == Message.Type.TIME_CAPSULE
@@ -44,6 +61,7 @@ def post_save_message(sender, created, instance: Message, **kwargs):
             scheduled_at=scheduled_at,
         )
     else:
+        # update the corresponding job if the message is updated
         if instance.type == Message.Type.TIME_CAPSULE:
             if instance.scheduled_at != getattr(
                 instance, '__previous_scheduled_at', None
@@ -61,28 +79,47 @@ def post_save_message(sender, created, instance: Message, **kwargs):
 
 @receiver(pre_save, sender=Job)
 def pre_save_job(sender, instance: Job, **kwargs):
+    """Signal handler to store the previous value of the is_completed field of a Job instance.
+
+    Args:
+        sender (Type[Model]): The model class that sent the signal.
+        instance (Job): The instance of Job that triggered the signal.
+    """
     if instance._state.adding:
+        # skip if the instance is being created
         return
+    # cache the previous value of the is_completed field in the instance for comparison
     previous = Job.objects.only('is_completed').get(pk=instance.pk)
     instance.__previous_is_completed = previous.is_completed
 
 
 @receiver(post_save, sender=Job)
-def post_save_job(sender, created, instance: Job, **kwargs):
+def post_save_job(sender, created: bool, instance: Job, **kwargs):
+    """Signal handler to create an ActivityLog instance when a Job instance is created or updated.
+
+    Args:
+        sender (Type[Model]): The model class that sent the signal.
+        created (bool): A boolean indicating whether the instance was created.
+        instance (Job): The instance of Job that triggered the signal.
+    """
     if created:
+        # create an activity log for a new job i.e. a new message
         ActivityLog.objects.create(
             user_id=instance.message.user_id,
             type=ActivityLog.Type.MESSAGE_CREATED,
             description=f'{MESSAGE_TYPE_MAPPING[instance.message.type]} - "{instance.message.subject}" scheduled.',
         )
     if instance.is_completed is False:
+        # early return if the job is not completed
         return
     if (
         not hasattr(instance, '__previous_is_completed')
         or instance.is_completed == instance.__previous_is_completed
     ):
+        # early return if the job is not updated
         return
 
+    # create an activity log for a completed job
     ActivityLog.objects.create(
         user_id=instance.message.user_id,
         type=ActivityLog.Type.MESSAGE_DELIVERED,
@@ -92,6 +129,13 @@ def post_save_job(sender, created, instance: Job, **kwargs):
 
 @receiver(post_delete, sender=Job)
 def post_delete_job(sender, instance: Job, **kwargs):
+    """Signal handler to create an ActivityLog instance when a Job instance is deleted.
+
+    Args:
+        sender (Type[Model]): The model class that sent the signal.
+        instance (Job): The instance of Job that triggered the signal.
+    """
+    # create an activity log for a deleted job i.e. a deleted message
     ActivityLog.objects.create(
         user_id=instance.message.user_id,
         type=ActivityLog.Type.MESSAGE_DELETED,

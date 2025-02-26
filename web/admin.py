@@ -5,6 +5,8 @@ from web.models import ActivityLog, Message
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
+    """Admin class for the Message model."""
+
     list_display = (
         'user',
         'type',
@@ -24,6 +26,8 @@ class MessageAdmin(admin.ModelAdmin):
 
 @admin.register(ActivityLog)
 class ActivityLogAdmin(admin.ModelAdmin):
+    """Admin class for the ActivityLog model."""
+
     list_display = (
         'user',
         'type',

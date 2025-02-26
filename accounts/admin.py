@@ -6,6 +6,8 @@ from accounts.models import User
 
 @admin.register(User)
 class UserAdmin(UserAdmin):
+    """Admin class for the User model."""
+
     list_display = (
         'email',
         'first_name',

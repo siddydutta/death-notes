@@ -5,6 +5,8 @@ from cron.models import Job
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
+    """Admin class for the Job model."""
+
     list_display = (
         'message',
         'scheduled_at',

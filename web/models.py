@@ -7,12 +7,35 @@ from django.utils.html import strip_tags
 from accounts.models import User
 
 
+EMAIL_TEMPLATE_NAME = 'email.html'
+
+
 class Message(models.Model):
+    """
+    Represents a scheduled message that can be sent to recipients.
+
+    Attributes:
+        user (ForeignKey): The user who created the message.
+        type (CharField): The type of the message, either FINAL_WORD or TIME_CAPSULE.
+        recipients (TextField): Comma-separated list of email recipients.
+        status (CharField): The status of the message, either SCHEDULED, DELIVERED, or FAILED.
+        subject (CharField): The subject of the message.
+        text (TextField): The content of the message.
+        delay (PositiveSmallIntegerField): Delay before sending message for FINAL_WORD (in days).
+        scheduled_at (DateTimeField): When the message is scheduled to be sent for TIME_CAPSULE.
+        created_at (DateTimeField): The date and time when the message was created.
+        updated_at (DateTimeField): The date and time when the message was last updated.
+    """
+
     class Type(models.TextChoices):
+        """Enumeration for message types."""
+
         FINAL_WORD = 'FINAL_WORD', 'Final Word'
         TIME_CAPSULE = 'TIME_CAPSULE', 'Time Capsule'
 
     class Status(models.TextChoices):
+        """Enumeration for message statuses."""
+
         SCHEDULED = 'SCHEDULED', 'Scheduled'
         DELIVERED = 'DELIVERED', 'Delivered'
         FAILED = 'FAILED', 'Failed'
@@ -40,6 +63,7 @@ class Message(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
+        """Custom save method to enforce business rules based on message type."""
         if self.type == self.Type.FINAL_WORD:
             if not self.delay:
                 raise ValueError('Delay must be set for FINAL_WORD messages')
@@ -52,12 +76,21 @@ class Message(models.Model):
                 raise ValueError('Scheduled at must be set for TIME_CAPSULE messages')
         return super().save(*args, **kwargs)
 
-    def send(self, force_send=False) -> bool:
+    def send(self, force_send: bool = False) -> bool:
+        """Sends the message to the recipients. Returns True if sent successfully, otherwise False.
+
+        Args:
+            force_send (bool, optional): Force send an already delivered message. Defaults to False.
+
+        Returns:
+            bool: True if the message was sent successfully, otherwise False.
+        """
         if self.status == self.Status.DELIVERED and not force_send:
             return False
 
+        # render the email template with the message content
         html_message = render_to_string(
-            template_name='message_template.html',
+            template_name=EMAIL_TEMPLATE_NAME,
             context={
                 'subject': self.subject,
                 'text': self.text,
@@ -68,6 +101,7 @@ class Message(models.Model):
         )
         plain_message = strip_tags(html_message)
 
+        # send the email and update message status
         sent = send_mail(
             subject=self.subject,
             message=plain_message,
@@ -79,12 +113,27 @@ class Message(models.Model):
         self.save(update_fields=['status', 'updated_at'])
         return sent == 1
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """String representation of the Message object."""
         return f'Message {self.id} - {self.type} - {self.subject}'
 
 
 class ActivityLog(models.Model):
+    """
+    ActivityLog model to log user activities.
+
+    Attributes:
+        user (ForeignKey): Reference to the User corresponding to the activity.
+        type (CharField): Type of activity performed, chosen from predefined choices.
+        timestamp (DateTimeField): The time when the activity was logged.
+        description (TextField): Detailed description of the activity.
+        created_at (DateTimeField): The time when the activity log was created.
+        updated_at (DateTimeField): The time when the activity log was last updated.
+    """
+
     class Type(models.TextChoices):
+        """Enumeration for activity log types."""
+
         CHECKED_IN = 'CHECKED_IN', 'Checked In'
         MESSAGE_CREATED = 'MESSAGE_CREATED', 'Message Created'
         MESSAGE_DELIVERED = 'MESSAGE_DELIVERED', 'Message Delivered'
@@ -100,5 +149,6 @@ class ActivityLog(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """String representation of the ActivityLog object."""
         return f'Activity {self.id} - {self.type}'

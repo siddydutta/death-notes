@@ -2,6 +2,7 @@ import logging
 
 from django.contrib.auth import get_user_model
 from rest_framework import status
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -14,9 +15,19 @@ logger = logging.getLogger(__name__)
 
 
 class MicrosoftAuthURLAPIView(APIView):
-    permission_classes = []
+    """API for the Microsoft Auth URL."""
 
-    def get(self, request, *args, **kwargs):
+    permission_classes = []  # publicly accessible API for auth
+
+    def get(self, request: Request, *args, **kwargs) -> Response:
+        """Get the Microsoft Auth URL.
+
+        Args:
+            request (Request): The request object.
+
+        Returns:
+            Response: The auth URL in the response object..
+        """
         auth_url = msal_app.get_authorization_request_url(
             scopes=SCOPES,
             redirect_uri=REDIRECT_URI,
@@ -25,18 +36,37 @@ class MicrosoftAuthURLAPIView(APIView):
 
 
 class MicrosoftLoginCallbackAPIView(APIView):
-    permission_classes = []
+    """API for handling the Microsoft login callback."""
 
-    def get(self, request, *args, **kwargs):
+    permission_classes = []  # publicly accessible API for auth
+
+    def get(self, request: Request, *args, **kwargs) -> Response:
+        """Echoes the code back to the client.
+
+        Args:
+            request (Request): The request object.
+
+        Returns:
+            Response: The code in the response object.
+        """
         code = request.GET.get('code')
         return Response({'code': code}, status=status.HTTP_200_OK)
 
-    def post(self, request, *args, **kwargs):
-        code = request.data.get('code')
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        """Handle the Microsoft login callback.
+
+        Args:
+            request (Request): The request object.
+
+        Returns:
+            Response: The user info and tokens in the response object.
+        """
+        code = request.data.get('code')  # code from Microsoft auth
         if code is None:
             return Response(
                 {'error': 'No code in request'}, status=status.HTTP_400_BAD_REQUEST
             )
+        # validate code and get auth token
         token_response = msal_app.acquire_token_by_authorization_code(
             code=code,
             scopes=SCOPES,
@@ -48,14 +78,16 @@ class MicrosoftLoginCallbackAPIView(APIView):
             return Response(
                 {'error': 'Invalid grant'}, status=status.HTTP_403_FORBIDDEN
             )
+        # get user info and create user if not exists
         user_info = get_user_info(access_token)
         user, created = User.objects.get_or_create(
             email=user_info['mail'],
             defaults={
-                'first_name': user_info['givenName'],
-                'last_name': user_info['surname'],
+                'first_name': user_info.get('givenName', ''),
+                'last_name': user_info.get('surname', ''),
             },
         )
+        # create tokens for the user
         refresh = RefreshToken.for_user(user)
         response = {
             'user': {
