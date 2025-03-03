@@ -16,7 +16,11 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
+      - name: Check Deployment Condition
+        run: echo "deploy=${{ secrets.DEPLOY }}" >> $GITHUB_ENV
+
       - name: Deploy to Azure VM
+        if: env.deploy == 'true'
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
           set -e
