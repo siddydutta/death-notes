@@ -4,9 +4,6 @@ from django.conf import settings
 from msal import ConfidentialClientApplication
 
 
-# URI to which Microsoft will redirect the user to after authentication
-REDIRECT_URI = settings.MSAL_REDIRECT_URI
-
 # URL to fetch user information from the Microsoft API
 USER_INFO_URL = 'https://graph.microsoft.com/v1.0/me'
 

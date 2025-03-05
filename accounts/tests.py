@@ -7,7 +7,6 @@ from rest_framework.test import APITestCase
 from typing import Callable
 
 from accounts.clients.microsoft import (
-    REDIRECT_URI,
     SCOPES,
     USER_INFO_URL,
     get_user_info,
@@ -18,6 +17,10 @@ from accounts.models import User
 
 class ViewTests(APITestCase):
     """Test the views in the accounts app."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.redirect_uri = 'http://localhost:8000/api/auth/microsoft/callback/'
 
     @patch('accounts.clients.microsoft.msal_app.get_authorization_request_url')
     def test_microsoft_auth_url_api_view(
@@ -31,13 +34,15 @@ class ViewTests(APITestCase):
         # Given
         mock_get_auth_url.return_value = 'https://login.microsoftonline.com/auth'
         # When
-        response = self.client.get(reverse('ms-auth-url'))
+        response = self.client.get(
+            reverse('ms-auth-url') + f'?redirect_uri={self.redirect_uri}'
+        )
         # Then
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response['Content-Type'], 'application/json')
         self.assertIsInstance(response.json().get('auth_url'), str)
         mock_get_auth_url.assert_called_once_with(
-            scopes=SCOPES, redirect_uri=REDIRECT_URI
+            scopes=SCOPES, redirect_uri=self.redirect_uri
         )
 
     def test_microsoft_login_callback_api_view_get(self):
@@ -71,7 +76,10 @@ class ViewTests(APITestCase):
             'surname': 'User',
         }
         # When
-        response = self.client.post(reverse('ms-callback'), {'code': 'fake_code'})
+        response = self.client.post(
+            reverse('ms-callback'),
+            {'code': 'fake_code', 'redirect_uri': self.redirect_uri},
+        )
         # Then
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response['Content-Type'], 'application/json')
@@ -79,11 +87,14 @@ class ViewTests(APITestCase):
         self.assertIn('refresh', response.json())
         self.assertIn('access', response.json())
         mock_acquire_token.assert_called_once_with(
-            code='fake_code', scopes=SCOPES, redirect_uri=REDIRECT_URI
+            code='fake_code', scopes=SCOPES, redirect_uri=self.redirect_uri
         )
         mock_get_user_info.assert_called_once_with('fake_access_token')
         # When
-        response = self.client.post(reverse('ms-callback'), {'code': 'fake_code'})
+        response = self.client.post(
+            reverse('ms-callback'),
+            {'code': 'fake_code', 'redirect_uri': self.redirect_uri},
+        )
         # Then
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -91,7 +102,9 @@ class ViewTests(APITestCase):
         """Test the MicrosoftLoginCallbackAPIView POST method with no code."""
         # Given
         # When
-        response = self.client.post(reverse('ms-callback'), {})
+        response = self.client.post(
+            reverse('ms-callback'), {'redirect_uri': self.redirect_uri}
+        )
         # Then
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response['Content-Type'], 'application/json')
@@ -110,13 +123,16 @@ class ViewTests(APITestCase):
         # Given
         mock_acquire_token.return_value = {}
         # When
-        response = self.client.post(reverse('ms-callback'), {'code': 'fake_code'})
+        response = self.client.post(
+            reverse('ms-callback'),
+            {'code': 'fake_code', 'redirect_uri': self.redirect_uri},
+        )
         # Then
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(response['Content-Type'], 'application/json')
         self.assertIn('error', response.json())
         mock_acquire_token.assert_called_once_with(
-            code='fake_code', scopes=SCOPES, redirect_uri=REDIRECT_URI
+            code='fake_code', scopes=SCOPES, redirect_uri=self.redirect_uri
         )
 
 
