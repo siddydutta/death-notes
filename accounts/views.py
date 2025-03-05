@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from accounts.clients.microsoft import REDIRECT_URI, SCOPES, get_user_info, msal_app
+from accounts.clients.microsoft import SCOPES, get_user_info, msal_app
 
 
 User = get_user_model()
@@ -28,9 +28,10 @@ class MicrosoftAuthURLAPIView(APIView):
         Returns:
             Response: The auth URL in the response object..
         """
+        redirect_uri = request.query_params.get('redirect_uri')
         auth_url = msal_app.get_authorization_request_url(
             scopes=SCOPES,
-            redirect_uri=REDIRECT_URI,
+            redirect_uri=redirect_uri,
         )
         return Response({'auth_url': auth_url})
 
@@ -62,15 +63,16 @@ class MicrosoftLoginCallbackAPIView(APIView):
             Response: The user info and tokens in the response object.
         """
         code = request.data.get('code')  # code from Microsoft auth
-        if code is None:
+        redirect_uri = request.data.get('redirect_uri')
+        if code is None or redirect_uri is None:
             return Response(
-                {'error': 'No code in request'}, status=status.HTTP_400_BAD_REQUEST
+                {'error': 'Missing parameters'}, status=status.HTTP_400_BAD_REQUEST
             )
         # validate code and get auth token
         token_response = msal_app.acquire_token_by_authorization_code(
             code=code,
             scopes=SCOPES,
-            redirect_uri=REDIRECT_URI,
+            redirect_uri=redirect_uri,
         )
         access_token = token_response.get('access_token')
         if access_token is None:
