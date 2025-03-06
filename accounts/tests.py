@@ -1,17 +1,13 @@
+from typing import Callable
 from unittest.mock import patch
 
+from django.test import TestCase
 from django.urls import reverse
 from msal import ConfidentialClientApplication
 from rest_framework import status
 from rest_framework.test import APITestCase
-from typing import Callable
 
-from accounts.clients.microsoft import (
-    SCOPES,
-    USER_INFO_URL,
-    get_user_info,
-    msal_app,
-)
+from accounts.clients.microsoft import SCOPES, USER_INFO_URL, get_user_info, msal_app
 from accounts.models import User
 
 
@@ -136,7 +132,7 @@ class ViewTests(APITestCase):
         )
 
 
-class ClientTests(APITestCase):
+class ClientTests(TestCase):
     """Test the external client functions."""
 
     @patch('accounts.clients.microsoft.requests.get')
@@ -187,7 +183,7 @@ class ClientTests(APITestCase):
         self.assertIsInstance(msal_app, ConfidentialClientApplication)
 
 
-class ModelTests(APITestCase):
+class ModelTests(TestCase):
     """Test the models in the accounts app."""
 
     def test_create_user(self):
@@ -231,3 +227,20 @@ class ModelTests(APITestCase):
         self.assertEqual(admin_user.email, 'admin@example.com')
         self.assertTrue(admin_user.is_staff)
         self.assertTrue(admin_user.is_superuser)
+
+
+class SignalTests(TestCase):
+    """Test the signals in the accounts app."""
+
+    def test_pre_save_user(self):
+        """Test the pre_save_user signal handler."""
+        # Given
+        user = User.objects.create_user(
+            email='user@test.com', password='foobar', interval=7
+        )
+        # When
+        user.interval = 14
+        user.save()
+        # Then
+        self.assertTrue(hasattr(user, '__previous_interval'))
+        self.assertEqual(getattr(user, '__previous_interval'), 7)

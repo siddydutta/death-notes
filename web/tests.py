@@ -3,7 +3,6 @@ from datetime import datetime
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
-from django.db.models.signals import pre_save
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils.timezone import make_aware
@@ -39,7 +38,7 @@ class SignalTests(TestCase):
         )
         # When
         message.delay = 20
-        pre_save.send(sender=Message, instance=message)
+        message.save()
         # Then
         self.assertTrue(hasattr(message, '__previous_delay'))
         self.assertEqual(getattr(message, '__previous_delay'), 10)

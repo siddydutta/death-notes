@@ -152,6 +152,35 @@ class SignalTests(TestCase):
         # Then
         self.assertEqual(initial_job.scheduled_at, updated_job.scheduled_at)
 
+    def test_post_save_user_final_word(self):
+        """Test post-save signal for user final word messages."""
+        # Given
+        self.user.interval = 10
+        self.user.save()
+        message = Message.objects.create(
+            user=self.user,
+            type=Message.Type.FINAL_WORD,
+            recipients='user1@test.com',
+            subject='Test Subject',
+            text='Test text',
+            delay=30,
+        )
+        job = Job.objects.get(message=message)
+        now = timezone.now()
+        expected_schedule = now + timedelta(days=40)
+        self.assertAlmostEqual(
+            job.scheduled_at.timestamp(), expected_schedule.timestamp(), delta=5
+        )
+        # When
+        self.user.interval = 20
+        self.user.save()
+        job.refresh_from_db()
+        expected_schedule = now + timedelta(days=50)
+        # Then
+        self.assertAlmostEqual(
+            job.scheduled_at.timestamp(), expected_schedule.timestamp(), delta=5
+        )
+
     def test_post_save_message_time_capsule(self):
         """Test post-save signal for time capsule messages."""
         # Given
