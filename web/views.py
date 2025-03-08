@@ -1,6 +1,7 @@
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import ListModelMixin
 from rest_framework.request import Request
@@ -128,6 +129,15 @@ class MessageViewSet(ModelViewSet):
     def perform_create(self, serializer):
         """Set the user for the message to prevent BOLA."""
         serializer.save(user=self.request.user)
+
+    @action(detail=True, methods=['get'])
+    def test(self, request: Request, pk: int = None) -> Response:
+        """Sends the message as a test to the same user."""
+        message = self.get_object()
+        is_sent = message.send(is_test=True)
+        if is_sent:
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class ActivityLogViewSet(GenericViewSet, ListModelMixin):

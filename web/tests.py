@@ -122,8 +122,8 @@ class ModelTests(TestCase):
             self.assertTrue(sent)
             self.assertEqual(message.status, Message.Status.DELIVERED)
 
-    def test_send_delivered_message_no_force_send(self):
-        """Test attempting to send an already delivered message without force send."""
+    def test_send_delivered_message(self):
+        """Test attempting to send an already delivered message without test flag."""
         # Given
         message = Message.objects.create(
             user=self.user,
@@ -138,6 +138,28 @@ class ModelTests(TestCase):
         is_sent = message.send()
         # Then
         self.assertFalse(is_sent)
+
+    def test_send_message_test(self):
+        """Test sending a message."""
+        # Given
+        message = Message.objects.create(
+            user=self.user,
+            type=Message.Type.FINAL_WORD,
+            recipients='user1@test.com',
+            subject='Test Subject',
+            text='Test text',
+            delay=10,
+        )
+        # When
+        with patch('web.models.send_mail') as mock_send_mail:
+            mock_send_mail.return_value = 1
+            sent = message.send(is_test=True)
+            # Then
+            self.assertTrue(sent)
+            self.assertEqual(message.status, Message.Status.SCHEDULED)
+            self.assertEqual(
+                mock_send_mail.call_args.kwargs['recipient_list'], [self.user.email]
+            )
 
     def test_send_message_failed(self):
         """Test handling of message sending failure."""
@@ -319,6 +341,48 @@ class ViewTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.json()['results']), 1)
         self.assertEqual(response.json()['results'][0]['type'], 'FINAL_WORD')
+
+    def test_message_viewset_test_action(self):
+        """Test the 'test' action of MessageViewSet."""
+        # Given
+        message = Message.objects.create(
+            user=self.user,
+            type=Message.Type.FINAL_WORD,
+            recipients='test@test.com',
+            subject='Test Message',
+            text='Test content',
+            delay=10,
+        )
+        # When
+        with patch.object(Message, 'send') as mock_send:
+            mock_send.return_value = True
+            response = self.client.get(
+                reverse('message-detail', kwargs={'pk': message.pk}) + 'test/'
+            )
+            # Then
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            mock_send.assert_called_once_with(is_test=True)
+
+    def test_message_viewset_test_action_failure(self):
+        """Test the 'test' action of MessageViewSet when sending fails."""
+        # Given
+        message = Message.objects.create(
+            user=self.user,
+            type=Message.Type.FINAL_WORD,
+            recipients='test@test.com',
+            subject='Test Message',
+            text='Test content',
+            delay=10,
+        )
+        # When
+        with patch.object(Message, 'send') as mock_send:
+            mock_send.return_value = False
+            response = self.client.get(
+                reverse('message-detail', kwargs={'pk': message.pk}) + 'test/'
+            )
+            # Then
+            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            mock_send.assert_called_once_with(is_test=True)
 
     def test_activity_log_viewset(self):
         """Test retrieving activity logs via the API."""

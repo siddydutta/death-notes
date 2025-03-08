@@ -82,17 +82,22 @@ class Message(models.Model):
                 raise ValueError('Scheduled at cannot be in the past')
         return super().save(*args, **kwargs)
 
-    def send(self, force_send: bool = False) -> bool:
-        """Sends the message to the recipients. Returns True if sent successfully, otherwise False.
+    def send(self, is_test: bool = False) -> bool:
+        """Sends the message to the recipient(s).
 
         Args:
-            force_send (bool, optional): Force send an already delivered message. Defaults to False.
+            is_test (bool, optional): Sends the message to the user itself as a test.
 
         Returns:
             bool: True if the message was sent successfully, otherwise False.
         """
-        if self.status == self.Status.DELIVERED and not force_send:
+        if self.status == self.Status.DELIVERED and not is_test:
             return False
+
+        if is_test is True:
+            recipients = [self.user.email]
+        else:
+            recipients = [email.strip() for email in self.recipients.split(',')]
 
         # render the email template with the message content
         html_message = render_to_string(
@@ -112,11 +117,12 @@ class Message(models.Model):
             subject=self.subject,
             message=plain_message,
             from_email=f'Death Notes Service <{settings.EMAIL_HOST_USER}>',
-            recipient_list=[email.strip() for email in self.recipients.split(',')],
+            recipient_list=recipients,
             html_message=html_message,
         )
-        self.status = self.Status.DELIVERED if sent == 1 else self.Status.FAILED
-        self.save(update_fields=['status', 'updated_at'])
+        if is_test is False:
+            self.status = self.Status.DELIVERED if sent == 1 else self.Status.FAILED
+            self.save(update_fields=['status', 'updated_at'])
         return sent == 1
 
     def __str__(self) -> str:
