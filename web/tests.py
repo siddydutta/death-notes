@@ -156,7 +156,7 @@ class ModelTests(TestCase):
             sent = message.send(is_test=True)
             # Then
             self.assertTrue(sent)
-            self.assertEqual(message.status, Message.Status.DELIVERED)
+            self.assertEqual(message.status, Message.Status.SCHEDULED)
             self.assertEqual(
                 mock_send_mail.call_args.kwargs['recipient_list'], [self.user.email]
             )
