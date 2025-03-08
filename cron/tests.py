@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from django.test import TestCase
 from django.utils import timezone
-from django.utils.timezone import make_aware
+from django.utils.timezone import now, timedelta
 
 from accounts.models import User
 from cron.models import Job
@@ -18,9 +18,7 @@ class TaskTests(TestCase):
     def setUp(self):
         """Set up test data."""
         self.user = User.objects.create_user(email='user@test.com', password='foobar')
-        self.scheduled_at = make_aware(
-            datetime.strptime('2025-02-10 10:00:00', '%Y-%m-%d %H:%M:%S')
-        )
+        self.scheduled_at = now() + timedelta(days=10)
 
     @patch('cron.tasks.logger')
     def test_process_pending_jobs(self, mock_logger: Callable[[str], None]):
@@ -39,6 +37,8 @@ class TaskTests(TestCase):
             scheduled_at=self.scheduled_at,
         )
         job = Job.objects.get(message=message)
+        job.scheduled_at = timezone.now() - timedelta(days=2)
+        job.save()
         with patch('web.models.Message.send') as mock_send:
             mock_send.return_value = True
             # When
@@ -65,6 +65,8 @@ class TaskTests(TestCase):
             scheduled_at=self.scheduled_at,
         )
         job = Job.objects.get(message=message)
+        job.scheduled_at = timezone.now() - timedelta(days=2)
+        job.save()
         with patch('web.models.Message.send') as mock_send:
             mock_send.side_effect = Exception('Sending failed')
             # When
@@ -81,9 +83,7 @@ class SignalTests(TestCase):
     def setUp(self):
         """Set up test data."""
         self.user = User.objects.create_user(email='user@test.com', password='foobar')
-        self.scheduled_at = make_aware(
-            datetime.strptime('2025-02-10 10:00:00', '%Y-%m-%d %H:%M:%S')
-        )
+        self.scheduled_at = now() + timedelta(days=10)
 
     def test_update_jobs_on_checkin(self):
         """Test updating jobs on user check-in."""
