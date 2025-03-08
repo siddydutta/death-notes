@@ -1,11 +1,10 @@
 import json
-from datetime import datetime
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
-from django.utils.timezone import make_aware
+from django.utils.timezone import now, timedelta
 from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -50,9 +49,7 @@ class ModelTests(TestCase):
     def setUp(self):
         """Set up test data."""
         self.user = User.objects.create_user(email='user@test.com', password='foobar')
-        self.scheduled_at = make_aware(
-            datetime.strptime('2025-02-10 10:00:00', '%Y-%m-%d %H:%M:%S')
-        )
+        self.scheduled_at = now() + timedelta(days=10)
 
     def test_save_final_word_message(self):
         """Test saving a final word message with validation checks."""
@@ -96,6 +93,9 @@ class ModelTests(TestCase):
             message.save()
         message.delay = None
         message.scheduled_at = None
+        with self.assertRaises(ValueError):
+            message.save()
+        message.scheduled_at = now() - timedelta(days=1)
         with self.assertRaises(ValueError):
             message.save()
         message.scheduled_at = self.scheduled_at
@@ -176,9 +176,7 @@ class ViewTests(APITestCase):
         self.user = User.objects.create_user(email='user@test.com', password='foobar')
         self.token = RefreshToken.for_user(self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token.access_token}')
-        self.scheduled_at = make_aware(
-            datetime.strptime('2025-02-10 10:00:00', '%Y-%m-%d %H:%M:%S')
-        )
+        self.scheduled_at = now() + timedelta(days=10)
 
     def test_unauthorized_access(self):
         """Test that unauthenticated requests are rejected."""

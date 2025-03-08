@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.db import models
 from django.template.loader import render_to_string
+from django.utils import timezone
 from django.utils.html import strip_tags
 
 from accounts.models import User
@@ -74,6 +75,11 @@ class Message(models.Model):
                 raise ValueError('Delay must not be set for TIME_CAPSULE messages')
             if not self.scheduled_at:
                 raise ValueError('Scheduled at must be set for TIME_CAPSULE messages')
+            if (
+                self.scheduled_at < timezone.now()
+                and self.status == self.Status.SCHEDULED
+            ):
+                raise ValueError('Scheduled at cannot be in the past')
         return super().save(*args, **kwargs)
 
     def send(self, force_send: bool = False) -> bool:
