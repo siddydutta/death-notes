@@ -31,6 +31,6 @@ python-decouple==3.8
 PyYAML==6.0.2
 requests==2.32.3
 sqlparse==0.5.3
-urllib3==2.3.0
+urllib3==2.4.0
 virtualenv==20.29.3
 whitenoise==6.9.0
