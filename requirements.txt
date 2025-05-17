@@ -10,7 +10,7 @@ Django==5.1.8
 django-cors-headers==4.7.0
 django-filter==25.1
 django-picklefield==3.3
-django-q2==1.7.6
+django-q2==1.8.0
 djangorestframework==3.16.0
 djangorestframework_simplejwt==5.4.0
 filelock==3.18.0
