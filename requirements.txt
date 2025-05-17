@@ -21,7 +21,7 @@ msal==1.32.0
 nodeenv==1.9.1
 packaging==25.0
 platformdirs==4.3.7
-pluggy==1.5.0
+pluggy==1.6.0
 pre_commit==4.2.0
 pycparser==2.22
 PyJWT==2.10.1
