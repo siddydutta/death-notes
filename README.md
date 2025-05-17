@@ -7,8 +7,9 @@
 
 Death Notes is a full-stack web application that allows users to schedule emails to receipients that are released at a fixed date and time or after a period of inactivity, because some words are too important to be left unsaid. This project was developed as coursework for the COMPSCI5012 Internet Technology course and received a **100/100** grade.
 
+- Video Presentation | YouTube
+[![Video Presentation | YouTube](https://img.youtube.com/vi/XeNMqyVeO-Q/0.jpg)](https://www.youtube.com/watch?v=XeNMqyVeO-Q)
 - [Design Specification](/artefacts/Design-Specification.pdf)
-- [Video Presentation | YouTube](https://youtu.be/XeNMqyVeO-Q)
 - [Implementation Report](/artefacts/Implementation-Report.pdf)
 
 ## Project Requirements
